@@ -110,19 +110,79 @@ class Code(object):
 		}
 		return jumpDict[jumpCode]
 
+class SymbolTable(object):
+	"""docstring for SymbolTable"""
+	def __init__(self):
+		self.labelDict = {
+			'SP'  : '0',
+			'LCL' : '1',
+			'ARG' : '2',
+			'THIS': '3',
+			'THAT': '4',
+			'SCREEN': '16384',
+			'KBD': '24576',
+			'R0' : '0',
+			'R1' : '1',
+			'R2' : '2',
+			'R3' : '3',
+			'R4' : '4',
+			'R5' : '5',
+			'R6' : '6',
+			'R7' : '7',
+			'R8' : '8',
+			'R9' : '9',
+			'R10' : '10',
+			'R11' : '11',
+			'R12' : '12',
+			'R13' : '13',
+			'R14' : '14',
+			'R15' : '15',
+		}
+	def addEntry(self, symbol, addr):
+		self.labelDict[symbol] = addr
+	def contains(self, symbol):
+		if symbol in self.labelDict.keys():
+			return True
+		else:
+			return False
+	def GetAddress(self, symbol):
+		return self.labelDict[symbol]
+
+
 def main():
 	filename = sys.argv[1]
 	rfile = open(filename, mode='r')
 	wfile = open(filename.split('.')[0]+'.hack',mode='w')
+	symbolTab = SymbolTable()
 	parser = Parser(rfile)
 	code = Code()
+	i = 0
+	#first loop
+	while parser.hasMoreCommands():
+		ctype = parser.commandType()
+		if ctype == 'L_COMMAND':
+			symbol = parser.symbol()
+			symbolTab.addEntry(symbol,i-1)
+		else:
+			i += 1
+		parser.advance()
+	rfile.close()
 
+	#second loop
+	num = 16
+	rfile = open(filename, mode='r')
+	parser = Parser(rfile)
 	while parser.hasMoreCommands():
 		ctype = parser.commandType()
 		if ctype == 'A_COMMAND':
-			# print 'A:',parser.text,
-			# print '\t symbol:',parser.symbol()
 			symbol = parser.symbol()
+			if not symbol.isdigit():
+				if symbolTab.contains(symbol):
+					symbol = symbolTab.GetAddress(symbol)
+				else:
+					symbolTab.labelDict[symbol] = str(num)
+					symbol = num
+					num += 1
 			ins = bin(int(symbol))
 			ins = ins[2:]
 			lenth = len(ins)
@@ -134,21 +194,12 @@ def main():
 			wfile.write(ins+'\n')
 
 		elif ctype == 'C_COMMAND':
-			# print 'C:',parser.text,
-			# print '\t dest:',parser.dest()
-			# print '\t comp:',parser.comp()
-			# print '\t jump:',parser.jump()
-
 			dest = parser.dest()
 			comp = parser.comp()
 			jump = parser.jump()
 			ins = '111'+code.comp(comp)+code.dest(dest)+code.jump(jump)
 			wfile.write(ins+'\n')
 
-		elif ctype == 'L_COMMAND':
-			# print 'L:',parser.text,
-			# print '\t symbol:',parser.symbol()
-			pass
 		parser.advance()
 
 	rfile.close()
