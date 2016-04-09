@@ -37,7 +37,7 @@ class Parser(object):
 			destlist=self.text.split('=')
 			return destlist[0].strip(' ')
 		elif self.text.find(';')>=0:
-			return None
+			return 'None'
 	def comp(self):
 		if self.text.find('=')>=0:
 			complist1=self.text.split('=')
@@ -120,16 +120,35 @@ def main():
 	while parser.hasMoreCommands():
 		ctype = parser.commandType()
 		if ctype == 'A_COMMAND':
-			print 'A:',parser.text,
-			print '\t symbol:',parser.symbol()
+			# print 'A:',parser.text,
+			# print '\t symbol:',parser.symbol()
+			symbol = parser.symbol()
+			ins = bin(int(symbol))
+			ins = ins[2:]
+			lenth = len(ins)
+			if lenth <= 15:
+				n = 16-lenth
+				ins = n*'0'+ins
+			else:
+				print 'Error,ValueOverFlow!'
+			wfile.write(ins+'\n')
+
 		elif ctype == 'C_COMMAND':
-			print 'C:',parser.text,
-			print '\t dest:',parser.dest()
-			print '\t comp:',parser.comp()
-			print '\t jump:',parser.jump()
+			# print 'C:',parser.text,
+			# print '\t dest:',parser.dest()
+			# print '\t comp:',parser.comp()
+			# print '\t jump:',parser.jump()
+
+			dest = parser.dest()
+			comp = parser.comp()
+			jump = parser.jump()
+			ins = '111'+code.comp(comp)+code.dest(dest)+code.jump(jump)
+			wfile.write(ins+'\n')
+
 		elif ctype == 'L_COMMAND':
-			print 'L:',parser.text,
-			print '\t symbol:',parser.symbol()
+			# print 'L:',parser.text,
+			# print '\t symbol:',parser.symbol()
+			pass
 		parser.advance()
 
 	rfile.close()
