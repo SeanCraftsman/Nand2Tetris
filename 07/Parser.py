@@ -1,38 +1,54 @@
-#!/usr/bin/python
-Arith = ('add','sub','neg','eq','gt','lt','and','or','not')
 
-def hasMoreCommands(line):
-    # Return if there were more command in input
-    if not line:
-        return False
-    else:
-        return True
+class Parser(object):
+	"""docstring for Parser"""
+	def __init__(self, rfile):
+		self.rfile = open(rfile,'r')
+		self.advance()
+		self.Arith = ('add','sub','neg','eq','gt','lt','and','or','not')
 
-def advance(rfile):
-    # Return the next command, should be called only if hasMoreCommands() is true
-    line= rfile.readline()
-    return line
+	def hasMoreCommands(self):
+		if self.line:
+			return True
+		else:
+			return False
 
-def commandType(line):
-    # Return the type of the current VM command
-    if line.find('push')>= 0:
-        return 'C_PUSH'
-    elif line.find('pop')>=0:
-        return 'C_POP'
-    elif line.strip() in Arith:
-        return 'C_ARITHMETIC'
+	def advance(self):
+		self.line = self.rfile.readline()
+		while self.line.startswith('//') or \
+			self.line == '\n':
+			self.line = self.rfile.readline()
+		self.text = self.line.split('//')[0]
 
-def arg1(line):
-    # Return the first argument of the command
-    if commandType(line) is 'C_ARITHMETIC':
-        return line.strip()
-    else:
-        spline = line.split(' ')
-        return spline[1]
+	def commandType(self):
+		if self.text.startswith('push'):
+			return 'C_PUSH'
+		elif self.text.startswith('pop'):
+			return 'C_POP'
+		elif self.text.strip() in self.Arith:
+			return 'C_ARITHMETIC'
+		elif self.text.startswith('label'):
+			return 'C_LABEL'
+		elif self.text.startswith('if-goto'):
+			return 'C_IF'
+		elif self.text.startswith('goto'):
+			return 'C_GOTO'
+		elif self.text.startswith('function'):
+			return 'C_FUNCTION'
+		elif self.text.startswith('return'):
+			return 'C_RETURN'
+		elif self.text.startswith('call'):
+			return 'C_CALL'
+	
+	def arg1(self):
+		if self.commandType() is 'C_ARITHMETIC':
+			return self.text.strip()
+		else:
+			lst = self.text.split(' ')
+			return lst[1]
 
-def  arg2(line):
-    # Return the second argument of hte command
-    
-    if commandType(line) in ('C_POP','C_PUSH','C_FUNCTION','C_CALL'):
-        spline=line.split(' ')
-        return spline[2]
+	def arg2(self):
+		if self.commandType() in ('C_POP','C_PUSH','C_FUNCTION','C_CALL'):
+			lst = self.text.split(' ')
+			return lst[2]
+		else:
+			print '--Error, No arg2!--'

@@ -1,27 +1,24 @@
 
 import sys,os
-import Parser
-import CodeWriter
+from Parser import Parser
+from CodeWriter import CodeWriter
 
 filename = sys.argv[1]
-rfile = open(filename,'r')
-wfile = CodeWriter.setFileName(filename)
-wfile.write('@256\nD=A\n@SP\nM=D\n')
+ps = Parser(filename)
+cw = CodeWriter()
+cw.setFileName(filename)
+cw.wfile.write('@256\nD=A\n@SP\nM=D\n')
 
-line = Parser.advance(rfile)
-
-while Parser.hasMoreCommands(line):
-    while line == '\n' or line.startswith('//'):
-        line = Parser.advance(rfile)
-    ctype = Parser.commandType(line)
+while ps.hasMoreCommands():
+    ctype = ps.commandType()
     if ctype == 'C_ARITHMETIC':
-        arg1 = Parser.arg1(line).strip()
-        CodeWriter.writeArithmetic(wfile,arg1)
+        arg1 = ps.arg1().strip()
+        cw.writeArithmetic(arg1)
     elif ctype in ('C_PUSH','C_POP'):
-        arg1 = Parser.arg1(line).strip()
-        arg2 = Parser.arg2(line).strip()
-        CodeWriter.writePushPop(wfile,ctype,arg1,arg2)
-    line = Parser.advance(rfile)
+        arg1 = ps.arg1().strip()
+        arg2 = ps.arg2().strip()
+        cw.writePushPop(ctype,arg1,arg2)
+    ps.advance()
     
-rfile.close()
-CodeWriter.Close(wfile)
+ps.rfile.close()
+cw.Close()
