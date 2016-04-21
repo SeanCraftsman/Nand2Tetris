@@ -1,7 +1,6 @@
 class Tokenizer(object):
 	"""docstring for Tokenizer"""
-	def __init__(self, rfile):
-		self.rfile = rfile
+	def __init__(self, rfilename):
 		self.token = ''
 		self.SymbleTable=('{','}','(',')','[',']','.',',',\
 			';','+','-','*','/','&','|','<','>','=','~')
@@ -10,15 +9,34 @@ class Tokenizer(object):
 			'void','true','false','null','this','let','do','if',\
 			'else','while','return')
 
+		# clear comments
+		readfile = open(rfilename,'r')
+		copyfile = open('copyfile','w')
+		while line=readfile.readline():
+			while line == '\n' or line.startswith('//'):
+				line=readfile.readline()
+			if '//' in line:
+				line=line[:line.find('//')]
+			if '/*' in line:
+				aline=line[:line.find('/*')]
+				while line.find('*/')<0:
+					line=readfile.readline()
+				bline=line[line.find('*/')+2:]
+				line=aline+bline
+			copyfile.write(line)
+		copyfile.close()
+		readfile.close()
+		self.rfile = open('copyfile','r')
+
 	def hasMoreTokens(self):
 		temp = self.rfile.read(1)
 		while temp in '\n\t' and temp != '':
 			temp = self.rfile.read(1)
 		if not temp:
-			return 0
+			return False
 		else:
 			self.rfile.seek(-1,1)
-			return 1
+			return True
 
 	def advance(self):
 		self.token=''
