@@ -1,42 +1,22 @@
-class Tokenizer(object):
-	"""docstring for Tokenizer"""
-	def __init__(self, rfilename):
-		self.token = ''
-		self.SymbleTable=('{','}','(',')','[',']','.',',',\
-			';','+','-','*','/','&','|','<','>','=','~')
-		self.KeyWordtable=('class','constructor','function',\
-			'method','field','static','var','int','char','boolean',\
-			'void','true','false','null','this','let','do','if',\
-			'else','while','return')
+#!/usr/bin/python
+STable=('{','}','(',')','[',']','.',',',';','+','-','*','/','&','|','<','>','=','~')
+KWtable=('class','constructor','function','method','field','static','var','int','char','boolean',\
+	'void','true','false','null','this','let','do','if','else','while','return')
 
-		# clear comments
-		readfile = open(rfilename,'r')
-		copyfile = open('copyfile','w')
-		while line=readfile.readline():
-			while line == '\n' or line.startswith('//'):
-				line=readfile.readline()
-			if '//' in line:
-				line=line[:line.find('//')]
-			if '/*' in line:
-				aline=line[:line.find('/*')]
-				while line.find('*/')<0:
-					line=readfile.readline()
-				bline=line[line.find('*/')+2:]
-				line=aline+bline
-			copyfile.write(line)
-		copyfile.close()
-		readfile.close()
-		self.rfile = open('copyfile','r')
+class Tokenizer():
+	def __init__(self,rfile):
+		self.rfile=rfile
+		self.token=''
 
 	def hasMoreTokens(self):
-		temp = self.rfile.read(1)
-		while temp in '\n\t' and temp != '':
-			temp = self.rfile.read(1)
+		temp=self.rfile.read(1)
+		while temp in ' \n\t' and temp != '':
+			temp=self.rfile.read(1)
 		if not temp:
-			return False
+			return 0
 		else:
 			self.rfile.seek(-1,1)
-			return True
+			return 1
 
 	def advance(self):
 		self.token=''
@@ -46,11 +26,11 @@ class Tokenizer(object):
 			while temp.isalpha() or temp.isdigit() or temp == '_':
 				self.token+=temp
 				temp=self.rfile.read(1)
-			if temp in self.SymbleTable or temp =='"':
+			if temp in STable or temp =='"':
 				self.rfile.seek(-1,1)
 			elif temp == ' ' or temp == '\n':
 				self.rfile.seek(-1,1)
-		elif temp in self.SymbleTable:
+		elif temp in STable:
 			self.token=temp
 		elif temp =='"':
 			self.token += '"'
@@ -61,9 +41,9 @@ class Tokenizer(object):
 			self.token+='"'
 
 	def tokenType(self):
-		if self.token in self.KeyWordtable:
+		if self.token in KWtable:
 			return 'KEYWORD'
-		elif self.token in self.SymbleTable:
+		elif self.token in STable:
 			return 'SYMBOL'
 		elif self.token.isdigit():
 			return 'INT_CONSTANT'
