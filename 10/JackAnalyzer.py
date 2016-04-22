@@ -34,8 +34,3 @@ outputCompile.compileClass()
 rfile.close()
 wfile.close()
 os.remove('copyfile')
-Bline   详细X
-网络释义
-Bline: 变址寄存器
-bline out: 贝尔出
-bline film: 盲色片
