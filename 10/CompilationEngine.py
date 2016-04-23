@@ -1,4 +1,5 @@
 #!/usr/bin/python
+
 import JackTokenizer
 
 class Compile():
