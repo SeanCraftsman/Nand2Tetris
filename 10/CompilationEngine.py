@@ -3,10 +3,10 @@
 import JackTokenizer
 
 class Compile():
-	def __init__(self,rfile,wfile):
-		self.rfile=rfile
+	def __init__(self,tokenizer,wfile):
 		self.wfile=wfile
-		self.tokenizer=JackTokenizer.Tokenizer(self.rfile)
+		self.tokenizer=tokenizer
+		self.rfile=self.tokenizer.rfile
 
 	def writeXmlTag(self,token):
 		self.wfile.write(token)
@@ -14,11 +14,11 @@ class Compile():
 	def writeXml(self,tType,token):
 		if tType == 'symbol':
 			if self.tokenizer.token=='>':
-				self.writeXmlTag('<'+tType+'> '+'&gt'+' </'+tType+'>\n')
+				self.writeXmlTag('<'+tType+'> '+'&gt;'+' </'+tType+'>\n') # &gt == >
 			elif self.tokenizer.token=='<':
-				self.writeXmlTag('<'+tType+'> '+'&lt'+' </'+tType+'>\n')
+				self.writeXmlTag('<'+tType+'> '+'&lt;'+' </'+tType+'>\n') # &lt == <
 			elif self.tokenizer.token=='&':
-				self.writeXmlTag('<'+tType+'> '+'&amp'+' </'+tType+'>\n')
+				self.writeXmlTag('<'+tType+'> '+'&amp;'+' </'+tType+'>\n') # &amp == &
 			else:
 				self.writeXmlTag('<'+tType+'> '+token+' </'+tType+'>\n')
 		else:
@@ -27,12 +27,11 @@ class Compile():
 	def NextToken(self):
 		if self.tokenizer.hasMoreTokens():
 			self.tokenizer.advance()
-		else:
-			pass
 
 	def moveBack(self):
 		lennum=-len(self.tokenizer.token)
 		self.rfile.seek(lennum,1)
+		
 
 	def compileType(self):
 		tType=self.tokenizer.tokenType()
@@ -40,11 +39,11 @@ class Compile():
 			self.writeXml('keyword',self.tokenizer.token)
 		elif tType == 'SYMBOL':
 			if self.tokenizer.token=='>':
-				self.writeXml('symbol','&gt')
+				self.writeXml('symbol','&gt;')
 			elif self.tokenizer.token=='<':
-				self.writeXml('symbol','&lt')
+				self.writeXml('symbol','&lt;')
 			elif self.tokenizer.token=='&':
-				self.writeXml('symbol','&amp')
+				self.writeXml('symbol','&amp;')
 			else:
 				self.writeXml('symbol',self.tokenizer.token)
 		elif tType == 'IDENTIFIER':
@@ -53,6 +52,8 @@ class Compile():
 			self.writeXml('integerConstant',self.tokenizer.token)
 		elif tType == 'STRING_CONSTANT':
 			self.writeXml('stringConstant',self.tokenizer.token.strip('"'))
+
+
 
 	def compileVarDec(self):
 		'''
@@ -95,7 +96,7 @@ class Compile():
 				self.NextToken()
 				self.writeXml('identifier',self.tokenizer.token)
 				self.NextToken()				
-		self.writeXmlTag('/<parameterList>\n')
+		self.writeXmlTag('</parameterList>\n')
 
 	def compileClassVarDec(self):
 		'''
@@ -117,6 +118,8 @@ class Compile():
 			self.NextToken()
 		self.writeXml('symbol',self.tokenizer.token)
 		self.writeXmlTag('</classVarDec>\n')
+
+
 
 	def compileTerm(self):
 		self.writeXmlTag('<term>\n')
@@ -146,6 +149,10 @@ class Compile():
 		else:
 			self.compileType()
 		self.writeXmlTag('</term>\n')
+
+
+
+
 
 	def compileExpression(self):
 		'''
@@ -262,7 +269,7 @@ class Compile():
 			elif self.tokenizer.token == 'return':
 				self.compileReturn()
 			else:
-				print 'Error!'+token
+				print 'Error! '+self.tokenizer.token
 				exit()
 			self.NextToken()
 		self.writeXmlTag('</statements>\n')
